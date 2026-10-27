@@ -162,6 +162,10 @@ impl Extractor {
         text
     }
 
+    pub fn has_link(&self, text: &str) -> bool {
+        self.url.is_match(text) || self.email.is_match(text)
+    }
+
     pub fn words(&self, text: &str) -> Vec<String> {
         let lowered = text.to_lowercase();
         let shaped = self

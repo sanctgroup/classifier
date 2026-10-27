@@ -10,6 +10,8 @@ use crate::model::{sigmoid, Model};
 
 pub const DEFAULT_BLOCKED_EXTENSIONS: &str = ".ace .apk .app .appx .bat .cab .chm .cmd .com .cpl .dll .exe .hta .img .inf .iso .jar .js .jse .lnk .msc .msi .msix .msp .pif .ps1 .reg .scr .sct .shb .sys .url .vb .vbe .vbs .vhd .vhdx .wsc .wsf .wsh .xll";
 
+const MIN_TEXT_WORDS: usize = 5;
+
 const AUTH_ADJUSTMENTS: &[(&str, &str, f64)] = &[
     ("spf", "fail", 0.8),
     ("spf", "softfail", 0.3),
@@ -91,6 +93,7 @@ pub fn parse_extensions(list: &str) -> HashSet<String> {
 
 pub struct Prepared {
     spam_score: f64,
+    short_text: bool,
     auth_reasons: Vec<String>,
     extension_reasons: Vec<String>,
     attachments: Vec<Vec<u8>>,
@@ -171,9 +174,14 @@ impl Classifier {
         let (adjustment, auth_reasons) = self.auth_adjustment(&request);
         let vector = self.extractor.vectorize(subject, text);
         let spam_score = sigmoid(self.model.logit(&vector) + adjustment);
+        let short_text = self.extractor.words(subject).len() + self.extractor.words(text).len()
+            < MIN_TEXT_WORDS
+            && !self.extractor.has_link(subject)
+            && !self.extractor.has_link(text);
 
         Ok(Prepared {
             spam_score,
+            short_text,
             auth_reasons,
             extension_reasons,
             attachments,
@@ -213,6 +221,7 @@ impl Classifier {
     pub async fn finish(&self, prepared: Prepared) -> ClassifyResponse {
         let Prepared {
             spam_score,
+            short_text,
             auth_reasons,
             mut extension_reasons,
             attachments,
@@ -226,8 +235,10 @@ impl Classifier {
             ("malicious", spam_score.max(0.99), extension_reasons)
         } else if virus_scan == "error" && self.policy.clamd_fail_closed {
             ("malicious", 0.5, vec!["scan_error".to_string()])
-        } else if spam_score >= self.policy.threshold {
+        } else if spam_score >= self.policy.threshold && !(short_text && auth_reasons.is_empty()) {
             ("spam", spam_score, auth_reasons)
+        } else if spam_score >= self.policy.threshold {
+            ("ham", 1.0 - spam_score, vec!["short_text".to_string()])
         } else {
             ("ham", 1.0 - spam_score, Vec::new())
         };
