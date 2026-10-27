@@ -1,0 +1,7 @@
+*
+!Cargo.toml
+!Cargo.lock
+!rust-toolchain.toml
+!src/
+!models/sanct-spam.json
+!models/sanct-spam.bin

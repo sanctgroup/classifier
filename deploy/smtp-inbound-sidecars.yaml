@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smtp-inbound
+spec:
+  template:
+    spec:
+      securityContext:
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: smtp-inbound
+          env:
+            - name: MAIL_CLASSIFY_URL
+              value: "http://127.0.0.1:8080/classify"
+            - name: MAIL_CLASSIFY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: sanct-classifier
+                  key: api-secret
+        - name: classifier
+          image: ghcr.io/sanctgroup/classifier:latest
+          env:
+            - name: CLASSIFIER_LISTEN
+              value: "127.0.0.1:8080"
+            - name: CLASSIFIER_API_SECRET_FILE
+              value: /secrets/api-secret
+            - name: CLAMD_ADDRESS
+              value: unix:///run/clamav/clamd.sock
+          volumeMounts:
+            - name: classifier-secret
+              mountPath: /secrets
+              readOnly: true
+            - name: clamd-run
+              mountPath: /run/clamav
+              readOnly: true
+          readinessProbe:
+            exec:
+              command: ["/usr/local/bin/sanct-classifier", "healthcheck"]
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["/usr/local/bin/sanct-classifier", "healthcheck"]
+            periodSeconds: 30
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            runAsGroup: 65532
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: "1"
+              memory: 320Mi
+        - name: clamav
+          image: clamav/clamav:1.5.4-debian13-slim@sha256:cce3e1a43ae2bb40e11335c52c0e1e98273b12fa3d587e617f63a6907cc4b70b
+          env:
+            - name: GLIBC_TUNABLES
+              value: glibc.malloc.perturb=165:glibc.malloc.tcache_count=0
+            - name: CLAMD_CONF_TCPAddr
+              value: "127.0.0.1"
+            - name: CLAMD_CONF_LocalSocketMode
+              value: "666"
+            - name: CLAMD_CONF_TemporaryDirectory
+              value: /scratch
+            - name: CLAMD_CONF_ConcurrentDatabaseReload
+              value: "no"
+            - name: CLAMD_CONF_MaxThreads
+              value: "4"
+            - name: CLAMD_CONF_StreamMaxLength
+              value: 55M
+            - name: CLAMD_CONF_MaxFileSize
+              value: 55M
+            - name: CLAMD_CONF_MaxScanSize
+              value: 150M
+            - name: CLAMD_CONF_MaxRecursion
+              value: "12"
+            - name: CLAMD_CONF_MaxFiles
+              value: "2000"
+            - name: FRESHCLAM_CHECKS
+              value: "12"
+          volumeMounts:
+            - name: clamav-db
+              mountPath: /var/lib/clamav
+            - name: clamd-run
+              mountPath: /tmp
+            - name: clamd-scratch
+              mountPath: /scratch
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: 50m
+              memory: 1100Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+      volumes:
+        - name: classifier-secret
+          secret:
+            secretName: sanct-classifier
+            defaultMode: 0440
+        - name: clamav-db
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: clamd-run
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Mi
+        - name: clamd-scratch
+          emptyDir:
+            medium: Memory
+            sizeLimit: 512Mi
