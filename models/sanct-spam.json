@@ -1,0 +1,403 @@
+{
+  "name": "sanct-spam",
+  "feature_version": 2,
+  "dim_bits": 20,
+  "weights_file": "sanct-spam.bin",
+  "weights_sha256": "aa6dcb71379690e4ec4a75c836837e227bc71baff54ae4c27a53ffe6f80c4e40",
+  "bias": 2.7363629345096894,
+  "threshold": 0.976428,
+  "max_val_fpr": 0.002,
+  "trained_at": "2026-10-27T09:00:37+00:00",
+  "params": {
+    "alpha": 3e-07,
+    "average": false
+  },
+  "calibration": {
+    "scale": 1.0611151627581932,
+    "offset": 0.14323521047911517
+  },
+  "datasets": [
+    {
+      "repo": "puyang2025/seven-phishing-email-datasets",
+      "revision": "b7f3f8d99ebd4fd0af0a5afe027420e53f08d1a4",
+      "files": [
+        "train.parquet",
+        "eval.parquet",
+        "test.parquet"
+      ],
+      "license": "research corpora (TREC, CEAS, Enron, SpamAssassin, Ling)"
+    },
+    {
+      "repo": "kudzaiprichard/aura-phishing-email-corpus",
+      "revision": "539567cee21d03c83bd2fb1b142c18a80904eb72",
+      "files": [
+        "Nazario_5.csv",
+        "Nigerian_5.csv"
+      ],
+      "license": "cc-by-4.0"
+    },
+    {
+      "repo": "Dizzzy0x00/LLMGen-Phishing-Email-Dataset",
+      "revision": "d717e5457b71cb44dd038dafe6a81cea5e0badab",
+      "files": [
+        "GPT_Phishing_Email_dataset.csv"
+      ],
+      "license": "apache-2.0"
+    }
+  ],
+  "data": {
+    "emails": 210749,
+    "label_conflicts_dropped": 0,
+    "rows": 421498,
+    "nnz": 236287394,
+    "per_source": {
+      "TREC-07": {
+        "ham": 24344,
+        "spam": 29116
+      },
+      "TREC-05": {
+        "ham": 32195,
+        "spam": 22810
+      },
+      "TREC-06": {
+        "ham": 12381,
+        "spam": 3968
+      },
+      "Enron": {
+        "ham": 15471,
+        "spam": 13945
+      },
+      "Assassin": {
+        "ham": 4085,
+        "spam": 1703
+      },
+      "CEAS-08": {
+        "ham": 17275,
+        "spam": 21674
+      },
+      "Ling": {
+        "ham": 2401,
+        "spam": 457
+      },
+      "nazario": {
+        "ham": 240,
+        "spam": 1552
+      },
+      "nigerian": {
+        "ham": 107,
+        "spam": 3279
+      },
+      "llmgen": {
+        "ham": 1269,
+        "spam": 2477
+      }
+    },
+    "per_split": {
+      "train": 168370,
+      "val": 21089,
+      "test": 21290
+    },
+    "seconds": 47.3
+  },
+  "grid": [
+    {
+      "params": {
+        "alpha": 1e-07,
+        "average": false
+      },
+      "val_logloss": 0.053066011518239975,
+      "val_auc": 0.9982668715669349,
+      "seconds": 5.7
+    },
+    {
+      "params": {
+        "alpha": 1e-07,
+        "average": true
+      },
+      "val_logloss": 0.09677740931510925,
+      "val_auc": 0.9979901759735637,
+      "seconds": 6.7
+    },
+    {
+      "params": {
+        "alpha": 3e-07,
+        "average": false
+      },
+      "val_logloss": 0.049162089824676514,
+      "val_auc": 0.9982818028827021,
+      "seconds": 3.4
+    },
+    {
+      "params": {
+        "alpha": 3e-07,
+        "average": true
+      },
+      "val_logloss": 0.0645807683467865,
+      "val_auc": 0.9980580595147605,
+      "seconds": 5.2
+    },
+    {
+      "params": {
+        "alpha": 1e-06,
+        "average": false
+      },
+      "val_logloss": 0.056040141731500626,
+      "val_auc": 0.9980426912288229,
+      "seconds": 7.2
+    },
+    {
+      "params": {
+        "alpha": 1e-06,
+        "average": true
+      },
+      "val_logloss": 0.05416613817214966,
+      "val_auc": 0.998001140771445,
+      "seconds": 10.2
+    },
+    {
+      "params": {
+        "alpha": 3e-06,
+        "average": false
+      },
+      "val_logloss": 0.06885461509227753,
+      "val_auc": 0.9974722030210621,
+      "seconds": 6.9
+    },
+    {
+      "params": {
+        "alpha": 3e-06,
+        "average": true
+      },
+      "val_logloss": 0.06738368421792984,
+      "val_auc": 0.9974628284342129,
+      "seconds": 10.1
+    },
+    {
+      "params": {
+        "alpha": 1e-05,
+        "average": false
+      },
+      "val_logloss": 0.09149689972400665,
+      "val_auc": 0.9961883993015035,
+      "seconds": 7.1
+    },
+    {
+      "params": {
+        "alpha": 1e-05,
+        "average": true
+      },
+      "val_logloss": 0.09094987064599991,
+      "val_auc": 0.9961934481089094,
+      "seconds": 10.4
+    }
+  ],
+  "holdout": [],
+  "test": {
+    "full": {
+      "overall": {
+        "n": 21290,
+        "accuracy": 0.96891,
+        "precision": 0.99824,
+        "recall": 0.93715,
+        "f1": 0.96673,
+        "false_positive_rate": 0.00154,
+        "auc": 0.99918
+      },
+      "by_source": {
+        "Assassin": {
+          "n": 582,
+          "accuracy": 0.95361,
+          "precision": 1.0,
+          "recall": 0.83929,
+          "f1": 0.91262,
+          "false_positive_rate": 0.0,
+          "auc": 0.99731
+        },
+        "CEAS-08": {
+          "n": 3923,
+          "accuracy": 0.98955,
+          "precision": 0.99909,
+          "recall": 0.98259,
+          "f1": 0.99077,
+          "false_positive_rate": 0.00119,
+          "auc": 0.9996
+        },
+        "Enron": {
+          "n": 2990,
+          "accuracy": 0.9689,
+          "precision": 0.9985,
+          "recall": 0.9361,
+          "f1": 0.96629,
+          "false_positive_rate": 0.00128,
+          "auc": 0.99949
+        },
+        "Ling": {
+          "n": 271,
+          "accuracy": 0.96679,
+          "precision": 1.0,
+          "recall": 0.78049,
+          "f1": 0.87671,
+          "false_positive_rate": 0.0,
+          "auc": 0.99809
+        },
+        "TREC-05": {
+          "n": 5506,
+          "accuracy": 0.96731,
+          "precision": 0.99625,
+          "recall": 0.92518,
+          "f1": 0.9594,
+          "false_positive_rate": 0.00249,
+          "auc": 0.99874
+        },
+        "TREC-06": {
+          "n": 1688,
+          "accuracy": 0.96623,
+          "precision": 0.98886,
+          "recall": 0.8701,
+          "f1": 0.92568,
+          "false_positive_rate": 0.00313,
+          "auc": 0.99739
+        },
+        "TREC-07": {
+          "n": 5458,
+          "accuracy": 0.96262,
+          "precision": 0.99964,
+          "recall": 0.93126,
+          "f1": 0.96424,
+          "false_positive_rate": 0.0004,
+          "auc": 0.9996
+        },
+        "llmgen": {
+          "n": 354,
+          "accuracy": 0.97458,
+          "precision": 1.0,
+          "recall": 0.96234,
+          "f1": 0.98081,
+          "false_positive_rate": 0.0,
+          "auc": 0.99989
+        },
+        "nazario": {
+          "n": 192,
+          "accuracy": 0.84375,
+          "precision": 1.0,
+          "recall": 0.82456,
+          "f1": 0.90385,
+          "false_positive_rate": 0.0,
+          "auc": 1.0
+        },
+        "nigerian": {
+          "n": 326,
+          "accuracy": 0.96319,
+          "precision": 1.0,
+          "recall": 0.9625,
+          "f1": 0.98089,
+          "false_positive_rate": 0.0,
+          "auc": 1.0
+        }
+      }
+    },
+    "snippet": {
+      "overall": {
+        "n": 21290,
+        "accuracy": 0.91085,
+        "precision": 0.99762,
+        "recall": 0.81701,
+        "f1": 0.89833,
+        "false_positive_rate": 0.00181,
+        "auc": 0.99701
+      },
+      "by_source": {
+        "Assassin": {
+          "n": 582,
+          "accuracy": 0.89175,
+          "precision": 0.98165,
+          "recall": 0.6369,
+          "f1": 0.77256,
+          "false_positive_rate": 0.00483,
+          "auc": 0.98923
+        },
+        "CEAS-08": {
+          "n": 3923,
+          "accuracy": 0.97604,
+          "precision": 0.99953,
+          "recall": 0.95848,
+          "f1": 0.97858,
+          "false_positive_rate": 0.00059,
+          "auc": 0.9997
+        },
+        "Enron": {
+          "n": 2990,
+          "accuracy": 0.89398,
+          "precision": 0.9991,
+          "recall": 0.77809,
+          "f1": 0.87485,
+          "false_positive_rate": 0.00064,
+          "auc": 0.99745
+        },
+        "Ling": {
+          "n": 271,
+          "accuracy": 0.9262,
+          "precision": 1.0,
+          "recall": 0.5122,
+          "f1": 0.67742,
+          "false_positive_rate": 0.0,
+          "auc": 0.99661
+        },
+        "TREC-05": {
+          "n": 5506,
+          "accuracy": 0.90229,
+          "precision": 0.99494,
+          "recall": 0.7699,
+          "f1": 0.86807,
+          "false_positive_rate": 0.00281,
+          "auc": 0.99654
+        },
+        "TREC-06": {
+          "n": 1688,
+          "accuracy": 0.93424,
+          "precision": 0.99336,
+          "recall": 0.73284,
+          "f1": 0.84344,
+          "false_positive_rate": 0.00156,
+          "auc": 0.99521
+        },
+        "TREC-07": {
+          "n": 5458,
+          "accuracy": 0.89154,
+          "precision": 0.99789,
+          "recall": 0.80122,
+          "f1": 0.88881,
+          "false_positive_rate": 0.002,
+          "auc": 0.9968
+        },
+        "llmgen": {
+          "n": 354,
+          "accuracy": 0.84181,
+          "precision": 1.0,
+          "recall": 0.76569,
+          "f1": 0.8673,
+          "false_positive_rate": 0.0,
+          "auc": 0.9944
+        },
+        "nazario": {
+          "n": 192,
+          "accuracy": 0.69271,
+          "precision": 1.0,
+          "recall": 0.65497,
+          "f1": 0.79152,
+          "false_positive_rate": 0.0,
+          "auc": 1.0
+        },
+        "nigerian": {
+          "n": 326,
+          "accuracy": 0.85276,
+          "precision": 1.0,
+          "recall": 0.85,
+          "f1": 0.91892,
+          "false_positive_rate": 0.0,
+          "auc": 1.0
+        }
+      }
+    }
+  }
+}

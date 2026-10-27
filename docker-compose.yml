@@ -1,0 +1,58 @@
+name: sanct-classifier
+
+services:
+  classifier:
+    build: .
+    image: sanct-classifier:dev
+    environment:
+      CLASSIFIER_API_SECRET: ${CLASSIFIER_API_SECRET:?set CLASSIFIER_API_SECRET, for example with openssl rand -base64 48}
+      CLAMD_ADDRESS: unix:///run/clamav/clamd.sock
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - clamd-run:/run/clamav:ro
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    ulimits:
+      core: 0
+    mem_limit: 320m
+    memswap_limit: 320m
+    pids_limit: 256
+    depends_on: [clamav]
+    restart: unless-stopped
+
+  clamav:
+    image: clamav/clamav:1.5.4-debian13-slim@sha256:cce3e1a43ae2bb40e11335c52c0e1e98273b12fa3d587e617f63a6907cc4b70b
+    environment:
+      GLIBC_TUNABLES: glibc.malloc.perturb=165:glibc.malloc.tcache_count=0
+      CLAMD_CONF_TCPAddr: 127.0.0.1
+      CLAMD_CONF_LocalSocketMode: "666"
+      CLAMD_CONF_TemporaryDirectory: /scratch
+      CLAMD_CONF_ConcurrentDatabaseReload: "no"
+      CLAMD_CONF_MaxThreads: "4"
+      CLAMD_CONF_StreamMaxLength: 55M
+      CLAMD_CONF_MaxFileSize: 55M
+      CLAMD_CONF_MaxScanSize: 150M
+      CLAMD_CONF_MaxRecursion: "12"
+      CLAMD_CONF_MaxFiles: "2000"
+      FRESHCLAM_CHECKS: "12"
+    volumes:
+      - clamav-db:/var/lib/clamav
+      - clamd-run:/tmp
+    tmpfs:
+      - /scratch:size=512m,mode=1777
+    security_opt: ["no-new-privileges:true"]
+    ulimits:
+      core: 0
+    mem_limit: 2g
+    memswap_limit: 2g
+    restart: unless-stopped
+
+volumes:
+  clamav-db:
+  clamd-run:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=16m,mode=1777
