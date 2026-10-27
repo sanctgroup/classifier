@@ -172,8 +172,34 @@ async fn rust_client_shape_is_ham() {
 
 #[tokio::test]
 async fn spam_text_is_spam() {
-    let (_, result) = classify(&app(None, false), json!({"text": "lottery winner viagra"})).await;
+    let (_, result) = classify(
+        &app(None, false),
+        json!({"text": "lottery winner viagra claim it today"}),
+    )
+    .await;
     assert_eq!(result["label"], "spam");
+}
+
+#[tokio::test]
+async fn short_text_needs_more_evidence() {
+    let app = app(None, false);
+    let (_, short) = classify(&app, json!({"subject": "", "body": "viagra lottery"})).await;
+    assert_eq!(short["label"], "ham");
+    assert_eq!(short["reasons"], json!(["short_text"]));
+
+    let (_, link) = classify(
+        &app,
+        json!({"subject": "", "body": "viagra lottery https://pills.example"}),
+    )
+    .await;
+    assert_eq!(link["label"], "spam");
+
+    let (_, failing) = classify(
+        &app,
+        json!({"subject": "", "body": "viagra lottery", "spf": "fail"}),
+    )
+    .await;
+    assert_eq!(failing["label"], "spam");
 }
 
 #[tokio::test]
