@@ -63,11 +63,13 @@ cargo test --release
 | `CLASSIFIER_API_SECRET` or `CLASSIFIER_API_SECRET_FILE` | required, at least 32 bytes |
 | `CLASSIFIER_LISTEN` | `0.0.0.0:8080` |
 | `CLAMD_ADDRESS` | unset, scanning disabled (`unix:///path` or `tcp://host:port`) |
-| `CLAMD_FAIL_CLOSED` | `false` |
+| `CLAMD_FAIL_CLOSED` | `true` |
 | `CLASSIFIER_THRESHOLD` | from the model |
 | `CLASSIFIER_MAX_REQUEST_BYTES` | 72 MiB |
 | `CLASSIFIER_MEMORY_BUDGET_BYTES` | 256 MiB |
 | `CLASSIFIER_MAX_CONCURRENCY` | 16 |
+
+With `CLAMD_FAIL_CLOSED=true`, unavailable, disabled, timed-out, or failed attachment scanning returns HTTP 503. Callers must defer delivery on non-success responses and incomplete `virus_scan` statuses. Messages without attachments use `skipped` and do not require ClamAV.
 
 ## License
 

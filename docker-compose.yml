@@ -6,6 +6,7 @@ services:
     image: sanct-classifier:dev
     environment:
       CLASSIFIER_API_SECRET: ${CLASSIFIER_API_SECRET:?set CLASSIFIER_API_SECRET, for example with openssl rand -base64 48}
+      CLAMD_FAIL_CLOSED: "true"
       CLAMD_ADDRESS: unix:///run/clamav/clamd.sock
     ports:
       - "127.0.0.1:8080:8080"
