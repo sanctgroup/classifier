@@ -204,6 +204,15 @@ async fn classify(State(state): State<Arc<AppState>>, body: Bytes) -> Response {
     };
 
     let result = state.classifier.finish(prepared).await;
+    if state.classifier.policy.clamd_fail_closed
+        && matches!(result.virus_scan, "error" | "disabled")
+    {
+        return error(
+            &state,
+            StatusCode::SERVICE_UNAVAILABLE,
+            "malware scan unavailable",
+        );
+    }
     let elapsed = started.elapsed();
     let metrics = &state.metrics;
     Metrics::bump(&metrics.labels, &LABELS, result.label);

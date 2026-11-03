@@ -87,7 +87,7 @@ impl Config {
             request_timeout: Duration::from_secs(parse("CLASSIFIER_REQUEST_TIMEOUT_SECS", 120)?),
             clamd_address: var("CLAMD_ADDRESS"),
             clamd_timeout: Duration::from_secs(parse("CLAMD_TIMEOUT_SECS", 60)?),
-            clamd_fail_closed: parse("CLAMD_FAIL_CLOSED", false)?,
+            clamd_fail_closed: parse("CLAMD_FAIL_CLOSED", true)?,
             blocked_extensions: env::var("CLASSIFIER_BLOCKED_EXTENSIONS")
                 .unwrap_or_else(|_| DEFAULT_BLOCKED_EXTENSIONS.to_string()),
         };

@@ -290,8 +290,9 @@ async fn scan_errors_fail_open_or_closed() {
         Some(Clamd::new(&fake.address, Duration::from_secs(5)).unwrap()),
         true,
     );
-    let (_, result) = classify(&closed, payload).await;
-    assert_eq!(result["label"], "malicious");
+    let (status, result) = classify(&closed, payload).await;
+    assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE);
+    assert_eq!(result["error"], "malware scan unavailable");
 }
 
 #[tokio::test]
@@ -386,4 +387,44 @@ async fn clamd_client_parses_replies() {
     );
     assert!(Clamd::new("http://clamav:3310", Duration::from_secs(1)).is_err());
     assert!(Clamd::new("tcp://clamav", Duration::from_secs(1)).is_err());
+}
+
+#[tokio::test]
+async fn missing_and_unavailable_clamav_fail_closed() {
+    let payload =
+        json!({"text":"hi", "attachments":[{"filename":"a.txt", "content_base64":b64(b"x")}]});
+    assert_eq!(
+        classify(&app(None, true), payload.clone()).await.0,
+        StatusCode::SERVICE_UNAVAILABLE
+    );
+    let dir = tempfile::tempdir().unwrap();
+    let address = format!("unix://{}/missing.sock", dir.path().display());
+    let unavailable = Clamd::new(&address, Duration::from_millis(30)).unwrap();
+    assert_eq!(
+        classify(&app(Some(unavailable), true), payload).await.0,
+        StatusCode::SERVICE_UNAVAILABLE
+    );
+}
+
+#[tokio::test]
+async fn clamd_timeout_fails_closed() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("timeout.sock");
+    let listener = UnixListener::bind(&path).unwrap();
+    let task = tokio::spawn(async move {
+        let (_stream, _) = listener.accept().await.unwrap();
+        std::future::pending::<()>().await;
+    });
+    let clamd = Clamd::new(
+        &format!("unix://{}", path.display()),
+        Duration::from_millis(30),
+    )
+    .unwrap();
+    let payload =
+        json!({"text":"hi", "attachments":[{"filename":"a.txt", "content_base64":b64(b"x")}]});
+    assert_eq!(
+        classify(&app(Some(clamd), true), payload).await.0,
+        StatusCode::SERVICE_UNAVAILABLE
+    );
+    task.abort();
 }

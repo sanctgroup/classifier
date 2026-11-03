@@ -26,6 +26,8 @@ spec:
               value: "127.0.0.1:8080"
             - name: CLASSIFIER_API_SECRET_FILE
               value: /secrets/api-secret
+            - name: CLAMD_FAIL_CLOSED
+              value: "true"
             - name: CLAMD_ADDRESS
               value: unix:///run/clamav/clamd.sock
           volumeMounts:
